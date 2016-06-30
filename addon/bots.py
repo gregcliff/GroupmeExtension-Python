@@ -17,6 +17,3 @@ def get_bot_by_name(name):
         return bot
     else:
         return None
-
-b = get_bot_by_name("Johnny Five")
-print(b.name)
