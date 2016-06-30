@@ -13,21 +13,14 @@ class ApiConnector(object):
         self.id += 1
         return str(self.id)
 
-    def __init__(self):
-        self.start = int(time.time())
-        self.id=0
-
     def initialize(self):
-        p1 = self.p1()
-        print("Sending " + str(p1))
-        response = json.loads(requests.post(self.base_pub_sub_url, json=p1).text)
-        print("Received " + str(response))
+        self.start = int(time.time())
+        self.id = 0
+        response = json.loads(requests.post(self.base_pub_sub_url, json=self.p1()).text)
         self.client_id = response[0]['clientId']
-        p2 = self.p2(self.client_id)
-        print("Sending " + str(p2))
-        response = json.loads(requests.post(self.base_pub_sub_url, json=p2).text)
-        print("Received " + str(response))
+        response = json.loads(requests.post(self.base_pub_sub_url, json=self.p2(self.client_id)).text)
         if bool(response[0]['successful']):
+            print("Successfully connected to push service.  Attempting to move to websocket.")
             self.socket = websocket.create_connection(self.web_socket_url)
             j = json.dumps(self.poll())
             print("Sending " + str(j))
@@ -44,15 +37,16 @@ class ApiConnector(object):
         }]
 
     def p2(self,client_id):
+        info = util.get_connection_info()
         return [
             {
                 "channel": "/meta/subscribe",
                 "clientId": client_id,
-                "subscription": "/user/" + util.user_id(),
+                "subscription": "/user/" + info[1],
                 "id": self.get_id(),
                 "ext":
                     {
-                        "access_token": util.get_key()
+                        "access_token": info[0]
                     }
             }
         ]

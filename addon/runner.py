@@ -11,7 +11,7 @@ class Runner(object):
         self.handlers = handlers
 
     def join(self):
-        print("Connecting to Groupme API.")
+        print("Connecting to Groupme pub sub service.")
         self.connector.initialize()
         while self.run:
             if int(time.time()) - self.connector.start > 60 * 10:
