@@ -1,5 +1,5 @@
-from addon import util
-from addon.message_handler import MessageHandler
+from core import util
+from core.message_handler import MessageHandler
 import requests
 import json
 import time
@@ -23,8 +23,8 @@ class ApiConnector(object):
             print("Successfully connected to push service.  Attempting to move to websocket.")
             self.socket = websocket.create_connection(self.web_socket_url)
             j = json.dumps(self.poll())
-            print("Sending " + str(j))
             self.socket.send(j)
+            print("Success!")
         else:
             print("Error connecting to websocket.")
 
@@ -37,7 +37,7 @@ class ApiConnector(object):
         }]
 
     def p2(self,client_id):
-        info = util.get_connection_info()
+        info = util.get_config_info()
         return [
             {
                 "channel": "/meta/subscribe",
