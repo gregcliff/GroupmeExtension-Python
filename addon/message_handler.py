@@ -1,6 +1,6 @@
 class MessageHandler(object):
 
-    def __init__(self, filter):
+    def __init__(self, filter=None):
         self.filter = filter
 
     def handle(self, message):
