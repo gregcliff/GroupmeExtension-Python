@@ -1,0 +1,3 @@
+
+class MessageFilterer(object):
+    pass

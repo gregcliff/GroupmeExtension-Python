@@ -42,11 +42,11 @@ class ApiConnector(object):
             {
                 "channel": "/meta/subscribe",
                 "clientId": client_id,
-                "subscription": "/user/" + info[1],
+                "subscription": "/user/" + info['user_id'],
                 "id": self.get_id(),
                 "ext":
                     {
-                        "access_token": info[0]
+                        "access_token": info['access_key']
                     }
             }
         ]

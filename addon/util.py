@@ -4,6 +4,7 @@ import json
 import os
 
 GROUPME_INIT_FILE_VAR = "GROUPME_FILE"
+base_url = 'https://api.groupme.com/v3'
 
 def get_connection_info():
     if GROUPME_INIT_FILE_VAR in os.environ:
@@ -13,12 +14,10 @@ def get_connection_info():
     with open(file, 'r') as f:
        content = f.read()
     j = json.loads(content)
-    return j['access_key'], j['user_id'], j['group_id']
-
-base_url = 'https://api.groupme.com/v3'
+    return j
 
 def add_access_token(url):
-    return url + '?token=' + get_connection_info()[0]
+    return url + '?token=' + get_connection_info()['access_key']
 
 def get_groups():
     j = json.loads(requests.get(add_access_token(base_url+"/groups")).text)
@@ -28,7 +27,10 @@ def get_groups():
     return name_to_id_map
 
 def get_group_by_name(name):
-    return get_groups()[name]
+    groups = get_groups()
+    if name in groups:
+        return get_groups()[name]
+    return None
 
 def get_bots():
     return json.loads(requests.get(add_access_token(base_url + "/bots")).text)
@@ -54,3 +56,5 @@ def publish_bot_message(bot_id, text, picture_url=None):
         return True
     except Exception:
         return False
+
+print(get_group_by_name("Test"))

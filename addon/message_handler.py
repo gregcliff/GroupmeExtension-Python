@@ -1,11 +1,10 @@
 class MessageHandler(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, filter):
+        self.filter = filter
 
     def handle(self, message):
         print("Received message: " + str(message))
-
 
 class PrettyMessagePrint(MessageHandler):
 
