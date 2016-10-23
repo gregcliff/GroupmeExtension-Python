@@ -1,18 +1,14 @@
-import core
 from core.message_handler import *
 
-class PrettyMessagePrint(MessageHandler):
+class PrettyMessagePrint(UserMessageHandler):
 
     def __init__(self, params):
         pass
 
-    def handle(self, message):
-        for i in range(len(message)):
-            if is_from_bot(message[i]): continue
-            sender = get_sender(message[i])
-            text = get_text(message[i])
-            if sender is not None:
-                printable = sender + " sent a message "
-                if text is not None:
-                    printable = sender + ": " + text
-                print(printable)
+    def handle_user_message(self, message):
+        sender = message.sender
+        if sender is not None:
+            printable = sender + " sent a message "
+            if message.has_text():
+                printable = sender + ": " + message.text
+            print(printable)

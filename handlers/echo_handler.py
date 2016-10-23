@@ -1,13 +1,11 @@
-import core
 from core.message_handler import *
 
-class Echo(MessageHandler):
+class Echo(UserMessageHandler, BotMessageHandler):
 
     def __init__(self, params):
-        self.bot = core.bots.get_or_create_bot(params['bot']['name'])
+        UserMessageHandler.__init__(self)
+        BotMessageHandler.__init__(self, params)
 
-    def handle(self, message):
-        for i in range(len(message)):
-            text = get_text(message[i])
-            if not is_from_bot(message[i]) and text is not None:
-                self.bot.say(text)
+    def handle_user_message(self, message):
+        if not message.is_from_bot() and message.has_text():
+            self.bot.say(message.text)

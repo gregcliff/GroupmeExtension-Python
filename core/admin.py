@@ -1,6 +1,4 @@
 from core.message_handler import MessageHandler
-from core.message_handler import get_sender
-from core.message_handler import get_text
 
 class AdminHandler(MessageHandler):
 

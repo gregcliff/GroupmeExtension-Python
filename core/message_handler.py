@@ -1,37 +1,35 @@
-import core.bots
-import core.util
+from core.bots import *
 
 class MessageHandler(object):
-
-    def __init__(self, params):
-        pass
 
     def handle(self, message):
         print("Received message: " + str(message))
 
-def get_sender(message):
-    if 'data' in message and 'subject' in message['data']:
-        if 'name' in message['data']['subject']:
-            return message['data']['subject']['name']
-    return None
+class UserMessageHandler(MessageHandler):
 
-def get_sender_id(message):
-    if 'data' in message and 'subject' in message['data']:
-        if 'user_id' in message['data']['subject']:
-            return message['data']['subject']['user_id']
-    return None
+    def handle(self, message):
+        if message.is_from_bot():
+            return
+        else:
+            self.handle_user_message(message)
 
-def get_sender_type(message):
-    if 'data' in message and 'subject' in message['data']:
-        if 'sender_type' in message['data']['subject']:
-            return message['data']['subject']['sender_type']
-    return None
+    def handle_user_message(self, message):
+        pass
 
-def get_text(message):
-    if 'data' in message and 'subject' in message['data']:
-        if 'text' in message['data']['subject']:
-            return message['data']['subject']['text']
-    return None
+class TaggedMessageHandler(UserMessageHandler):
 
-def is_from_bot(message):
-    return get_sender_type(message) == 'bot'
+    def __init__(self, tag):
+        self.tag = tag
+
+    def handle_user_message(self, message):
+        if self.tag in message.tags:
+            self.handle_tagged_message(message)
+
+    def handle_tagged_message(self, message):
+        pass
+
+
+class BotMessageHandler(MessageHandler):
+
+    def __init__(self, params):
+        self.bot = get_or_create_bot(params['bot']['name'])

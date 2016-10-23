@@ -62,4 +62,6 @@ class ApiConnector(object):
         ]
 
     def check_for_message(self):
-        return json.loads(self.socket.recv())
+        json_response = json.loads(self.socket.recv())
+        return [unprocessed['data']['subject'] for unprocessed in json_response
+                if 'data' in unprocessed and 'subject' in unprocessed['data']]

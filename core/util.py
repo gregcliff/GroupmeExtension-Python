@@ -1,10 +1,8 @@
-
 import requests
 import json
 import os
-import logging
-import os
 import importlib
+from core.message import Message
 
 GROUPME_INIT_FILE_VAR = "GROUPME_CONFIG_FILE"
 default_file = os.path.expanduser('~'+os.path.sep+'groupme-ext.conf')
@@ -20,18 +18,23 @@ def get_config_info():
             raise Exception("Need a config file.  Specify file location with \'GROUPME_CONFIG_FILE\' or put "
                             "\'groupme-ext.conf\' in " + str(os.path.abspath(os.path.expanduser("~"))) + ".")
     with open(file, 'r') as f:
-       content = f.read()
+        content = f.read()
     j = json.loads(content)
     return j
 
-def get_handler_instances(handler_list):
+def get_handler_instances():
+    handler_list = []
     handler_dict = get_config_info()['handlers']
     for key in handler_dict:
         package = key[:key.rfind('.')]
         handler_class = key[key.rfind('.')+1:]
-        handler_class = getattr(importlib.import_module(package), handler_class)
-        params = handler_dict[key]
-        handler_list.append(handler_class(handler_dict[key]))
+        try:
+            handler_class = getattr(importlib.import_module(package), handler_class)
+            params = handler_dict[key]
+            handler_list.append(handler_class(params if params is not None else {}))
+        except ImportError as import_err:
+            print(import_err)
+            print("Could not find " + handler_class)
     return handler_list
 
 def add_access_token(url):
@@ -43,6 +46,25 @@ def get_groups():
     for i in j['response']:
         name_to_id_map[i['name']] = i['id']
     return name_to_id_map
+
+def get_messages(group_id, number_of_messages):
+    if number_of_messages > 100:
+        message_list = get_messages(group_id, 100)
+        remaining = number_of_messages - 100
+        last_message_id = message_list[len(message_list) - 1].raw_message['id']
+        while remaining > 0:
+            ask_for = 100 if remaining > 100 else remaining
+            j = json.loads(requests.get(
+                add_access_token(base_url + "/groups/" + group_id + "/messages"),
+                params={'limit': int(ask_for), 'before_id':str(last_message_id)}).text)['response']
+            message_list += [Message(message) for message in j['messages']]
+            remaining = number_of_messages - len(message_list)
+        return message_list
+    else:
+        j = json.loads(requests.get(
+            add_access_token(base_url+"/groups/"+group_id+"/messages"),
+            params={'limit':int(number_of_messages)}).text)['response']
+        return [Message(message) for message in j['messages']]
 
 def get_group_by_name(name):
     groups = get_groups()
