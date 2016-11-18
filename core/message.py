@@ -1,7 +1,6 @@
 class Message(object):
 
     def __init__(self, raw_message):
-        # bug with setting text 10/22
         self.raw_message = raw_message
         self.tags = get_tags(raw_message)
         self.sender_id = get_sender_id(raw_message)
@@ -19,16 +18,16 @@ class Message(object):
         return self.raw_message
 
 def get_sender(message):
-    return message['name']
+    return None if 'name' not in message else message['name']
 
 def get_sender_id(message):
-    return message['user_id']
+    return None if 'user_id' not in message else message['user_id']
 
 def get_sender_type(message):
-    return message['sender_type']
+    return None if 'sender_type' not in message else message['sender_type']
 
 def get_text(message):
-    return message['text']
+    return None if 'text' not in message else message['text']
 
 def get_tags(message, tag_marker='#'):
     text = get_text(message)
