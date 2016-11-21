@@ -47,24 +47,34 @@ def get_groups():
         name_to_id_map[i['name']] = i['id']
     return name_to_id_map
 
-def get_messages(group_id, number_of_messages):
-    if number_of_messages > 100:
-        message_list = get_messages(group_id, 100)
-        remaining = number_of_messages - 100
-        last_message_id = message_list[len(message_list) - 1].raw_message['id']
-        while remaining > 0:
-            ask_for = 100 if remaining > 100 else remaining
-            j = json.loads(requests.get(
-                add_access_token(base_url + "/groups/" + group_id + "/messages"),
-                params={'limit': int(ask_for), 'before_id':str(last_message_id)}).text)['response']
-            message_list += [Message(message) for message in j['messages']]
-            remaining = number_of_messages - len(message_list)
-        return message_list
-    else:
+def get_messages(group_id, number_of_messages, user_ids=[]):
+    if len(user_ids) == 0:
+        user_ids = get_users_in_group(group_id)
+    num_requests = 0
+    message_list = []
+    remaining = number_of_messages
+    last_message_id = None
+    while remaining > 0 and num_requests < 50:
+        ask_for = 100 if remaining > 100 else remaining
         j = json.loads(requests.get(
-            add_access_token(base_url+"/groups/"+group_id+"/messages"),
-            params={'limit':int(number_of_messages)}).text)['response']
-        return [Message(message) for message in j['messages']]
+            add_access_token(base_url + "/groups/" + group_id + "/messages"),
+            params={'limit': int(ask_for),
+                    'before_id': None if last_message_id is None else str(last_message_id)})
+                       .text)['response']
+        potential_messages = [Message(message) for message in j['messages']]
+        last_message_id = potential_messages[len(potential_messages) - 1].raw_message['id']
+        for potential_message in potential_messages:
+            if potential_message.sender_id in user_ids:
+                message_list.append(potential_message)
+        num_requests += 1
+        remaining = number_of_messages - len(message_list)
+    return message_list
+
+def get_users_in_group(group_id=None):
+    if group_id is None:
+        group_id = get_config_info()['real_group_id']
+    response = json.loads(requests.get(add_access_token(base_url + "/groups")).text)['response']
+    return [g for g in response if g['id'] == group_id][0]['members']
 
 def get_group_by_name(name):
     groups = get_groups()

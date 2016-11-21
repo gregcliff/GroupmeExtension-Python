@@ -1,14 +1,20 @@
 import random
 import re
 
-def generate(messages, output_sentences=2, order=2):
+def message_list_to_text_chunk(messages):
     message_text_chunk = ""
     for message in messages:
         if message.has_text() and not message.is_from_bot():
             message_text_chunk += message.text + '.'
+    return message_text_chunk
+
+def generate(messages, output_sentences=2, order=2):
+    message_text_chunk = message_list_to_text_chunk(messages)
     return generate_from_text(message_text_chunk, output_sentences, order)
 
-def generate_from_text(inputs, num_words, order):
+def build_markov_chain(messages, order):
+    inputs = message_list_to_text_chunk(messages)
+
     if type(inputs) == str:
         inputs = build_input_list([inputs])
 
@@ -26,7 +32,52 @@ def generate_from_text(inputs, num_words, order):
             if len(prev_list) > order:
                 del prev_list[0]
             root_node.add(prev_list)
-    n = num_words
+    return root_node
+
+def generate_from_markov_chain(markov_root_node, num_sentences, order):
+    n = num_sentences
+    current_list = [""]
+    output = ""
+    sentence = ""
+    while n > 0:
+        current = markov_root_node.generate_next(current_list)
+        if current == "." or current == '':
+            # get rid of the last ' '
+            sentence = sentence[:len(sentence) - 1]
+            if len(output) == 0:
+                output += sentence
+            else:
+                output += ".  " + sentence
+            current_list = [""]
+            sentence = ""
+            n -= 1
+            continue
+
+        sentence += current + " "
+        current_list.append(current)
+        if len(current_list) > order:
+            del current_list[0]
+    return output
+
+def generate_from_text(inputs, num_sentences, order):
+    if type(inputs) == str:
+        inputs = build_input_list([inputs])
+
+    root_node = MarkovNode(order)
+    for i in inputs:
+        splits = i.split(" ")
+        if len(splits) > 0:
+            prev_list = [""]
+            for split in splits:
+                prev_list.append(split)
+                if len(prev_list) > order:
+                    del prev_list[0]
+                root_node.add(prev_list)
+            prev_list.append('.')
+            if len(prev_list) > order:
+                del prev_list[0]
+            root_node.add(prev_list)
+    n = num_sentences
     current_list = [""]
     output = ""
     sentence = ""

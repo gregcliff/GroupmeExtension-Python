@@ -7,6 +7,7 @@ import logging
 from core.message import Message
 
 class Runner(object):
+    REINITIALIZATION_SECONDS = 60 * .25
     run = True
 
     def __init__(self, api_connector : ApiConnector, admin_handler : AdminHandler, handlers : [MessageHandler]):
@@ -22,8 +23,6 @@ class Runner(object):
         self.connector.initialize()
         while self.run:
             try:
-                if int(time.time()) - self.connector.start > 60 * 10:
-                    self.connector.initialize()
                 messages = self.connector.check_for_message()
                 for raw_message in messages:
                     message = Message(raw_message)
@@ -35,6 +34,7 @@ class Runner(object):
                             logging.exception(err)
                             logging.info("Removing handler " + handler.__class__.__name__)
                             self.handlers.remove(handler)
+                time.sleep(.005)
             except Exception as exc:
                 logging.exception(exc)
                 logging.error("Error...but run forever.")

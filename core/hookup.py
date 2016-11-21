@@ -8,13 +8,14 @@ import websocket
 class ApiConnector(object):
     base_pub_sub_url = "https://push.groupme.com/faye"
     web_socket_url = "wss://push.groupme.com/faye"
+    TIMEOUT_SECONDS = 30
 
     def get_id(self):
         self.id += 1
         return str(self.id)
 
     def initialize(self):
-        self.start = int(time.time())
+        self.start = time.time()
         self.id = 0
         response = json.loads(requests.post(self.base_pub_sub_url, json=self.p1()).text)
         self.client_id = response[0]['clientId']
@@ -62,6 +63,15 @@ class ApiConnector(object):
         ]
 
     def check_for_message(self):
-        json_response = json.loads(self.socket.recv())
-        return [unprocessed['data']['subject'] for unprocessed in json_response
-                if 'data' in unprocessed and 'subject' in unprocessed['data']]
+        try:
+            reinitialize_time = (self.start + self.TIMEOUT_SECONDS) - time.time()
+            if reinitialize_time < 0:
+                self.initialize()
+                return []
+            self.socket.settimeout(reinitialize_time)
+            json_response = json.loads(self.socket.recv())
+            return [unprocessed['data']['subject'] for unprocessed in json_response
+                    if 'data' in unprocessed and 'subject' in unprocessed['data']]
+        except websocket.WebSocketTimeoutException:
+            self.initialize()
+            return []
