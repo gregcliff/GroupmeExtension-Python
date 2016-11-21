@@ -8,7 +8,7 @@ import websocket
 class ApiConnector(object):
     base_pub_sub_url = "https://push.groupme.com/faye"
     web_socket_url = "wss://push.groupme.com/faye"
-    TIMEOUT_SECONDS = 30
+    TIMEOUT_SECONDS = 60* 30
 
     def get_id(self):
         self.id += 1

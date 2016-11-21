@@ -10,7 +10,7 @@ class SpeechGeneratorHandler(TaggedMessageHandler, BotMessageHandler):
         TaggedMessageHandler.__init__(self, 'speak')
         self.number_sentences = 2 if 'sentences' not in params else params['sentences']
         self.order = 2 if 'order' not in params else params['order']
-        self.number_of_messages = 100 if 'sample_size' not in params else params['order']
+        self.number_of_messages = 500 if 'sample_size' not in params else params['order']
         self.group_key = 'real_group_id' if 'sample_source' not in params else params['sample_source']
 
     def handle_tagged_message(self, message):

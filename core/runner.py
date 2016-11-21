@@ -7,7 +7,6 @@ import logging
 from core.message import Message
 
 class Runner(object):
-    REINITIALIZATION_SECONDS = 60 * 30
     run = True
 
     def __init__(self, api_connector : ApiConnector, admin_handler : AdminHandler, handlers : [MessageHandler]):

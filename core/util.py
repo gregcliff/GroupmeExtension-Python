@@ -49,7 +49,7 @@ def get_groups():
 
 def get_messages(group_id, number_of_messages, user_ids=[]):
     if len(user_ids) == 0:
-        user_ids = get_users_in_group(group_id)
+        user_ids = [user['user_id'] for user in get_users_in_group(group_id)]
     num_requests = 0
     message_list = []
     remaining = number_of_messages
