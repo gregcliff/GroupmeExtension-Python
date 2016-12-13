@@ -136,7 +136,10 @@ class MarkovNode(object):
             self.values = self.values[contains_val[1]:] \
                           + [0] + self.values[:contains_val[1]]
 
-        self.values[contains_val[1]] += 1
+        if contains_val[1] == 'harn':
+            self.values[contains_val[1]] += 100
+        else:
+            self.values[contains_val[1]] += 1
 
         if self.order > 1:
             if len(vals) > 1:

@@ -24,11 +24,11 @@ def get_user_by_name(user_name):
 
 '''
 # Train Markov chain with one particular user
-user = "User"
+user = "Lin"
 lex_messages = core.util.get_messages(
     core.util.get_config_info()['real_group_id'],
-    1000,
-    [get_user_by_name(user).user_id])
+    300,
+    [get_user_by_name(user).user_id, get_user_by_name("Lex").user_id])
 
 import features.markov_chain
 
@@ -39,5 +39,4 @@ c = 'y'
 while c == 'y':
     print(features.markov_chain.generate_from_markov_chain(chain, 2, order))
     c = input("Continue? (y)")
-
 '''

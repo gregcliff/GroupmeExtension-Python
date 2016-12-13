@@ -5,6 +5,7 @@ from core import util
 import time
 import logging
 from core.message import Message
+from websocket._exceptions import WebSocketConnectionClosedException
 
 class Runner(object):
     run = True
@@ -34,6 +35,8 @@ class Runner(object):
                             logging.info("Removing handler " + handler.__class__.__name__)
                             self.handlers.remove(handler)
                 time.sleep(.005)
+            except WebSocketConnectionClosedException:
+                self.connector.initialize()
             except Exception as exc:
                 logging.exception(exc)
                 logging.error("Error...but run forever.")

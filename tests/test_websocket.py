@@ -7,6 +7,7 @@ import logging
 
 class TestWebsocketStayAlive(unittest.TestCase):
 
+    @unittest.skip
     def test_getting_messages(self):
         apiConnector = ApiConnector()
         last_initialization = time()

@@ -8,7 +8,14 @@ import websocket
 class ApiConnector(object):
     base_pub_sub_url = "https://push.groupme.com/faye"
     web_socket_url = "wss://push.groupme.com/faye"
-    TIMEOUT_SECONDS = 60* 30
+    TIMEOUT_SECONDS = 20 * 60 # 20 minutes, Groupme API times out after 30
+
+    def __init__(self):
+        self.start = -1
+        self.id = -1
+        self.socket = None
+        self.client_id = None
+        self.last_received_time = None
 
     def get_id(self):
         self.id += 1
@@ -63,15 +70,17 @@ class ApiConnector(object):
         ]
 
     def check_for_message(self):
-        try:
-            reinitialize_time = (self.start + self.TIMEOUT_SECONDS) - time.time()
-            if reinitialize_time < 0:
-                self.initialize()
-                return []
-            self.socket.settimeout(reinitialize_time)
-            json_response = json.loads(self.socket.recv())
-            return [unprocessed['data']['subject'] for unprocessed in json_response
-                    if 'data' in unprocessed and 'subject' in unprocessed['data']]
-        except websocket.WebSocketTimeoutException:
-            self.initialize()
-            return []
+        reinitialize_time = (self.start + self.TIMEOUT_SECONDS) - time.time()
+        if reinitialize_time >= 1:
+            try:
+                self.socket.settimeout(reinitialize_time)
+                json_response = json.loads(self.socket.recv())
+                self.last_received_time = time.time()
+                return [unprocessed['data']['subject'] for unprocessed in json_response
+                        if 'data' in unprocessed and 'subject' in unprocessed['data']]
+            except websocket.WebSocketTimeoutException as t_exc:
+                print(t_exc)
+            except Exception as exc:
+                print(exc)
+        self.initialize()
+        return []
